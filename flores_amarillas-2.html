@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Un pequeño regalo para ti</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400;1,600&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #FFFCF0;
+  --gold: #F5C030;
+  --gold-deep: #B8820E;
+  --text: #3B2800;
+}
+
+body {
+  font-family: 'Jost', sans-serif;
+  background: var(--bg);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem 1.5rem;
+  overflow: hidden;
+  position: relative;
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background:
+    radial-gradient(ellipse at 30% 30%, rgba(245,192,48,0.10) 0%, transparent 55%),
+    radial-gradient(ellipse at 75% 70%, rgba(245,192,48,0.08) 0%, transparent 55%);
+  pointer-events: none;
+}
+
+/* Pétalos flotantes */
+.fp {
+  position: fixed;
+  pointer-events: none;
+  border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+  opacity: 0;
+  animation: floatUp linear infinite;
+  z-index: 0;
+}
+@keyframes floatUp {
+  0%   { transform: translateY(105vh) rotate(0deg);  opacity: 0; }
+  6%   { opacity: 0.4; }
+  94%  { opacity: 0.3; }
+  100% { transform: translateY(-10vh) rotate(380deg); opacity: 0; }
+}
+
+.card {
+  position: relative;
+  z-index: 1;
+  text-align: center;
+  width: 100%;
+  max-width: 640px;
+}
+
+.pretitle {
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: var(--gold-deep);
+  opacity: 0;
+  animation: fadeUp 0.9s ease 0.2s forwards;
+  margin-bottom: 0.6rem;
+}
+
+h1 {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(2rem, 7vw, 3rem);
+  font-weight: 600;
+  color: var(--text);
+  line-height: 1.2;
+  opacity: 0;
+  animation: fadeUp 0.9s ease 0.4s forwards;
+  margin-bottom: 1.5rem;
+}
+h1 em { font-style: italic; color: var(--gold-deep); }
+
+/* Contenedor SVG */
+#bouquet {
+  width: 100%;
+  max-width: 640px;
+  margin: 0 auto 2rem;
+  opacity: 0;
+  animation: fadeIn 0.5s ease 0.6s forwards;
+}
+
+.divider {
+  opacity: 0;
+  animation: fadeIn 0.8s ease 1.6s forwards;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  max-width: 300px;
+  margin: 0 auto 1.6rem;
+}
+.divider::before, .divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: rgba(184,130,14,0.25);
+}
+.divider span { font-size: 13px; color: var(--gold-deep); opacity: 0.55; }
+
+.quote {
+  opacity: 0;
+  animation: fadeUp 0.9s ease 1.8s forwards;
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic;
+  font-size: clamp(1.25rem, 4vw, 1.65rem);
+  color: var(--text);
+  line-height: 1.55;
+  max-width: 420px;
+  margin: 0 auto 0.8rem;
+}
+
+.quote-sig {
+  opacity: 0;
+  animation: fadeUp 0.8s ease 2.0s forwards;
+  font-family: 'Jost', sans-serif;
+  font-size: 0.7rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--gold-deep);
+  opacity: 0.65;
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes fadeIn {
+  from { opacity: 0; } to { opacity: 1; }
+}
+
+/* Animación de cada flor */
+@keyframes bloom {
+  0%   { transform: scale(0) rotate(-8deg); opacity: 0; }
+  60%  { transform: scale(1.1) rotate(2deg); opacity: 1; }
+  100% { transform: scale(1) rotate(0deg); opacity: 1; }
+}
+</style>
+</head>
+<body>
+
+<div class="card">
+  <p class="pretitle">para ti, con cariño</p>
+  <h1>Un pequeño <em>regalo</em><br>para ti</h1>
+  <div id="bouquet"></div>
+  <div class="divider"><span>✦</span></div>
+  <p class="quote">Te mereces flores<br>sin ser un día especial.</p>
+  <p class="quote-sig">— con todo el cariño del mundo</p>
+</div>
+
+<script>
+const NS = 'http://www.w3.org/2000/svg';
+
+function rnd(a, b) { return a + Math.random() * (b - a); }
+function pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+
+const PETAL_PAIRS = [
+  ['#FFD93D','#E6A800'],
+  ['#FFE55C','#F5A623'],
+  ['#FFF176','#F9A825'],
+  ['#FFE082','#FFB300'],
+];
+const CENTERS = ['#5D3000','#7B4000','#3E2000','#6B3A00'];
+const STEMS   = ['#3A6B2A','#2E5720','#487A36'];
+
+// Posiciones fijas en porcentaje del viewBox (cx%, cy%, tamaño relativo)
+// viewBox será 640 x 300
+// cy es la posición de la CABEZA de la flor
+const SLOTS = [
+  { cx: 0.12, cy: 0.30, s: 52 },
+  { cx: 0.28, cy: 0.22, s: 58 },
+  { cx: 0.45, cy: 0.28, s: 62 },
+  { cx: 0.62, cy: 0.20, s: 56 },
+  { cx: 0.78, cy: 0.30, s: 54 },
+  { cx: 0.90, cy: 0.40, s: 46 },
+  { cx: 0.20, cy: 0.50, s: 42 },
+  { cx: 0.55, cy: 0.50, s: 44 },
+];
+
+function makeFlower(x, y, size, delay) {
+  const g = document.createElementNS(NS, 'g');
+  // transform-origin must be at the flower head = (x, y) in SVG space
+  g.setAttribute('transform', `translate(${x},${y})`);
+  g.style.transformOrigin = '0px 0px';
+  g.style.opacity = '0';
+  g.style.animation = `bloom 0.7s cubic-bezier(.2,1.2,.4,1) ${delay}s forwards`;
+
+  const pal    = pick(PETAL_PAIRS);
+  const cen    = pick(CENTERS);
+  const stemC  = pick(STEMS);
+  const nP     = 10 + Math.floor(Math.random() * 4); // 10-13
+  const pLen   = size * 0.72;
+  const pW     = size * 0.36;
+  const rot    = rnd(0, 360);
+  const stemH  = size * rnd(1.7, 2.3);
+  const wobble = rnd(-10, 10);
+
+  // ── Stem (goes DOWN from 0,0) ──
+  const stem = document.createElementNS(NS, 'path');
+  stem.setAttribute('d',
+    `M 0,${size * 0.25} Q ${wobble},${stemH * 0.55} ${wobble * 0.4},${stemH}`
+  );
+  stem.setAttribute('stroke', stemC);
+  stem.setAttribute('stroke-width', String(Math.max(2.5, size * 0.075)));
+  stem.setAttribute('fill', 'none');
+  stem.setAttribute('stroke-linecap', 'round');
+  g.appendChild(stem);
+
+  // ── Leaf ──
+  const lx = wobble * 0.25 + size * 0.30;
+  const ly = stemH * 0.52;
+  const leaf = document.createElementNS(NS, 'ellipse');
+  leaf.setAttribute('cx', String(lx));
+  leaf.setAttribute('cy', String(ly));
+  leaf.setAttribute('rx', String(size * 0.21));
+  leaf.setAttribute('ry', String(size * 0.095));
+  leaf.setAttribute('fill', '#4A8C38');
+  leaf.setAttribute('transform', `rotate(-40,${lx},${ly})`);
+  g.appendChild(leaf);
+
+  // ── Back petals (darker shade) ──
+  for (let i = 0; i < nP; i++) {
+    const ang = (i / nP) * 360 + rot + (180 / nP);
+    const rad = ang * Math.PI / 180;
+    const px  = Math.cos(rad) * pLen * 0.60;
+    const py  = Math.sin(rad) * pLen * 0.60;
+    const el  = document.createElementNS(NS, 'ellipse');
+    el.setAttribute('cx', String(px));
+    el.setAttribute('cy', String(py));
+    el.setAttribute('rx', String(pW * 0.40));
+    el.setAttribute('ry', String(pLen * 0.52));
+    el.setAttribute('fill', pal[1]);
+    el.setAttribute('opacity', '0.70');
+    el.setAttribute('transform', `rotate(${ang},${px},${py})`);
+    g.appendChild(el);
+  }
+
+  // ── Front petals ──
+  for (let i = 0; i < nP; i++) {
+    const ang = (i / nP) * 360 + rot;
+    const rad = ang * Math.PI / 180;
+    const px  = Math.cos(rad) * pLen * 0.54;
+    const py  = Math.sin(rad) * pLen * 0.54;
+    const el  = document.createElementNS(NS, 'ellipse');
+    el.setAttribute('cx', String(px));
+    el.setAttribute('cy', String(py));
+    el.setAttribute('rx', String(pW * 0.37));
+    el.setAttribute('ry', String(pLen * 0.49));
+    el.setAttribute('fill', pal[0]);
+    el.setAttribute('transform', `rotate(${ang},${px},${py})`);
+    g.appendChild(el);
+  }
+
+  // ── Center disc ──
+  const disc = document.createElementNS(NS, 'circle');
+  disc.setAttribute('cx', '0');
+  disc.setAttribute('cy', '0');
+  disc.setAttribute('r', String(size * 0.27));
+  disc.setAttribute('fill', cen);
+  g.appendChild(disc);
+
+  // ── Texture dots on center ──
+  for (let d = 0; d < 9; d++) {
+    const a  = rnd(0, Math.PI * 2);
+    const dr = rnd(0, size * 0.15);
+    const dot = document.createElementNS(NS, 'circle');
+    dot.setAttribute('cx', String(Math.cos(a) * dr));
+    dot.setAttribute('cy', String(Math.sin(a) * dr));
+    dot.setAttribute('r',  String(size * 0.033));
+    dot.setAttribute('fill', 'rgba(255,255,255,0.20)');
+    g.appendChild(dot);
+  }
+
+  return g;
+}
+
+function buildBouquet() {
+  const W = 640, H = 300;
+
+  const svg = document.createElementNS(NS, 'svg');
+  svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+  svg.setAttribute('xmlns', NS);
+  svg.style.cssText = 'width:100%;height:auto;display:block;overflow:visible';
+
+  // Shuffle slots and pick 6-7
+  const shuffled = SLOTS.slice().sort(() => Math.random() - 0.5);
+  const chosen   = shuffled.slice(0, 6 + Math.floor(Math.random() * 2));
+
+  chosen.forEach((slot, i) => {
+    const cx = slot.cx * W;
+    const cy = slot.cy * H;
+    const sz = slot.s * rnd(0.85, 1.15); // slight size variation
+    svg.appendChild(makeFlower(cx, cy, sz, 0.8 + i * 0.12));
+  });
+
+  document.getElementById('bouquet').appendChild(svg);
+}
+
+buildBouquet();
+
+// ── Background floating petals ──
+(function () {
+  const cols = ['#FFD93D','#FFC300','#FFE55C','#F5C030','#FFEA70'];
+  for (let i = 0; i < 22; i++) {
+    const el = document.createElement('div');
+    el.className = 'fp';
+    const s = rnd(7, 20);
+    el.style.cssText =
+      `left:${rnd(0,100)}%;` +
+      `width:${s}px;height:${s * 0.55}px;` +
+      `background:${pick(cols)};` +
+      `animation-duration:${rnd(14,30)}s;` +
+      `animation-delay:${rnd(0,24)}s`;
+    document.body.appendChild(el);
+  }
+}());
+</script>
+</body>
+</html>
